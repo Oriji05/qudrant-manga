@@ -19,7 +19,9 @@ class Converter:
 
     def execute(self):
         vector = self.__model.encode(self.__text)
-        vector_4d = vector[:4]
-        return vector_4d
+        return vector
+    
+    def vector_lenght(self):
+        return len(self.execute())
 
 
