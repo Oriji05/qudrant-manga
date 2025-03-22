@@ -7,37 +7,40 @@ import json
 with open("dataset/mangas.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
+
 client = QdrantClient(url="http://localhost:6333")
-manga_points = []
+try:
+    client.create_collection(
+        collection_name="mangas",
+        vectors_config=VectorParams(size=384, distance=Distance.DOT),
+    )
+except Exception as e:
+    print(e)
 
-
-
-client.create_collection(
-    collection_name="mangas",
-    vectors_config=VectorParams(size=384, distance=Distance.DOT),
-)
 
 for manga in data:
     
     try:
+        
         converter = Converter(manga['synopsis'])
         mVector = list(converter.execute())
-        manga_points.append(
+        operation_info = client.upsert(
+        collection_name="mangas",
+        wait=True,
+        points=[
             PointStruct(
                 id = manga['id'], 
                 vector= mVector,
                 payload={"name": manga['name'] ,"synopsis": converter.getText()}
             )
+            ]
         )
+    
     except Exception as e:
         print(f"{e}")
     print(manga['id'])
 
-operation_info = client.upsert(
-        collection_name="mangas",
-        wait=True,
-        points=manga_points
-    )
+
 
 
 
